@@ -70,8 +70,9 @@ type GetUserResponse struct {
 	IsSetupPin   bool   `json:"is_setup_pin"`
 	IsDoBackup   bool   `json:"is_do_backup"`
 	Wallets      []struct {
-		Type    string `json:"type"`
-		Address string `json:"address"`
+		Type      string `json:"type"`
+		Address   string `json:"address"`
+		PublicKey string `json:"public_key"`
 	} `json:"wallets"`
 }
 
@@ -104,6 +105,10 @@ type SignMessageRequest struct {
 	Message string `json:"message"`
 }
 
+type DecryptMessageRequest struct {
+	Secret string `json:"secret"`
+}
+
 type CommonResponse struct {
 	OrderID int64 `json:"order_id"`
 }
@@ -134,12 +139,13 @@ type GetOrderStatusResponse struct {
 }
 
 const (
-	BehaviorTypeLogin         = 1
-	BehaviorTypeSignRawTx     = 2
-	BehaviorTypeSignSignature = 3
-	BehaviorTypePairedDevice  = 4
-	BehaviorTypeSetupPIN      = 5
-	BehaviorTypeBackup        = 6
+	BehaviorTypeLogin          = 1
+	BehaviorTypeSignRawTx      = 2
+	BehaviorTypeSignSignature  = 3
+	BehaviorTypePairedDevice   = 4
+	BehaviorTypeSetupPIN       = 5
+	BehaviorTypeBackup         = 6
+	BehaviorTypeDecryptMessage = 7
 )
 
 const (
@@ -363,6 +369,26 @@ func SignMessage(request *SignMessageRequest, qs []string) (response *CommonResp
 	}
 
 	logs.Debug("SignMessage() => ", response)
+	return
+}
+
+func DecryptMessage(request *DecryptMessageRequest, qs []string) (response *CommonResponse, err error) {
+	jsonRequest, err := json.Marshal(request)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := makeRequest("POST", "/v1/vaultx/wallets/decrypt", qs, jsonRequest, false)
+	if err != nil {
+		return nil, err
+	}
+
+	response = &CommonResponse{}
+	err = json.Unmarshal(resp, response)
+	if err != nil {
+		return nil, err
+	}
+
+	logs.Debug("DecryptMessage() => ", response)
 	return
 }
 

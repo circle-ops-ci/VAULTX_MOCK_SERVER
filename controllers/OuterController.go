@@ -333,6 +333,29 @@ func (c *OuterController) SignTransaction() {
 	c.Data["json"] = resp
 }
 
+// @router /wallets/decrypt [post]
+func (c *OuterController) DecryptMessage() {
+	defer c.ServeJSON()
+
+	var request api.DecryptMessageRequest
+	err := json.Unmarshal(c.Ctx.Input.RequestBody, &request)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
+	qs := getQueryString(c.Ctx)
+	if qs == nil {
+		c.AbortWithError(http.StatusBadRequest, errors.New("no required info"))
+	}
+
+	resp, err := api.DecryptMessage(&request, qs)
+	if err != nil {
+		logs.Error("DecryptMessage failed", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+	}
+
+	c.Data["json"] = resp
+}
+
 // @router /order/status [post]
 func (c *OuterController) GetOrderStatus() {
 	defer c.ServeJSON()

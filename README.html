@@ -347,6 +347,7 @@ kbd {
 <li><a href="#restore-user-key">Restore User Key</a></li>
 <li><a href="#sign-message">Sign Message</a></li>
 <li><a href="#sign-raw-transaction">Sign Raw Transaction</a></li>
+<li><a href="#decrypt-message">Decrypt Message</a></li>
 <li><a href="#query-callback-status">Query Callback Status</a></li>
 </ul></li>
 <li>Testing
@@ -1039,7 +1040,7 @@ kbd {
 <tr>
 <td style="text-align: left">expires_at</td>
 <td style="text-align: left">number</td>
-<td style="text-align: left">Expiration time (in unix time, UTC) of this 2fa request</td>
+<td style="text-align: left">Expiration time (in unix time, UTC) of this 2FA request</td>
 </tr>
 </tbody>
 </table>
@@ -1159,7 +1160,8 @@ kbd {
   &quot;wallets&quot;: [
     {
       &quot;type&quot;: &quot;quorum&quot;,
-      &quot;address&quot;: &quot;0x7bF1512559EEA03187dD3c9Ed65DD10eDeEBF6B0&quot;
+      &quot;address&quot;: &quot;0x69363AFef99DC6f52daA2C4D0731934d36f7844d&quot;,
+      &quot;public_key&quot;: &quot;0x03055b24413ef30be430cf131114ab768f245803c98ef5bf3b3aaafde414f7670e&quot;
     }
   ]
 }</code></pre></div>
@@ -1653,7 +1655,7 @@ Content-Type: application/octet-stream
 <blockquote>
 <p>This API has a callback.</p>
 
-<p>After2fa request confirmed on CYBAVO Auth APP, the corresponding callback will contain signed message.</p>
+<p>After 2FA request confirmed on CYBAVO Auth APP, the corresponding callback will contain signed message.</p>
 </blockquote>
 
 <p><strong><code>POST</code></strong> /v1/vaultx/wallets/signature</p>
@@ -1783,7 +1785,7 @@ Content-Type: application/octet-stream
 <blockquote>
 <p>This API has a callback.</p>
 
-<p>After 2fa request confirmed, server will call getnonce API to retrieve the nonce of the wallet address. Refer to <a href="#setup-getnonce-api">Setup getnonce API</a> section.</p>
+<p>After 2FA request confirmed, server will call getnonce API to retrieve the nonce of the wallet address. Refer to <a href="#setup-getnonce-api">Setup getnonce API</a> section.</p>
 </blockquote>
 
 <p><strong><code>POST</code></strong> /v1/vaultx/wallets/rawtx</p>
@@ -1934,16 +1936,22 @@ Content-Type: application/octet-stream
 
 <h5 id="toc_125"><a href="#table-of-contents">Back to top</a></h5>
 
-<p><a name="query-callback-status"></a></p>
+<p><a name="decrypt-message"></a></p>
 
-<h2 id="toc_126">Query Callback Status</h2>
+<h2 id="toc_126">Decrypt Message</h2>
 
-<p>Query callbacks&#39; status belong to requester&#39;s company.</p>
+<p>Decrypt the message which encrypted by requester&#39;s public key.</p>
 
-<p><strong><code>POST</code></strong> /v1/vaultx/order/status</p>
+<blockquote>
+<p>This API has a callback.</p>
+
+<p>After 2FA request confirmed on CYBAVO Auth APP, the corresponding callback will contain decrypted message.</p>
+</blockquote>
+
+<p><strong><code>POST</code></strong> /v1/vaultx/wallets/decrypt</p>
 
 <ul>
-<li><a href="#curl-query-callback-status">Sample curl command</a></li>
+<li><a href="#curl-decrypt-message">Sample curl command</a></li>
 </ul>
 
 <h5 id="toc_127">Request Format</h5>
@@ -1952,16 +1960,12 @@ Content-Type: application/octet-stream
 
 <h6 id="toc_128">API with query string</h6>
 
-<div><pre><code class="language-none">/v1/vaultx/order/status?email=johndoe@example.com&amp;company_id=1</code></pre></div>
+<div><pre><code class="language-none">/v1/vaultx/wallets/decrypt?email=johndoe@example.com&amp;company_id=1</code></pre></div>
 
 <h6 id="toc_129">Post body</h6>
 
 <div><pre><code class="language-javascript">{
-  &quot;order_ids&quot;: [
-    10000000004,
-    20000000004,
-    30000000001
-  ]
+  &quot;secret&quot;: &quot;0x04c7a7db0953984c6b3127a65300a86732a1799f076137a2619d913b84bf3130ff5fb947ac5b01706d902cb4fee021148eb0299626fb7c69f5e763ba3657fcef51f2326178289ac4d63d424444abaac33ec3c66844e5cd19d6ce12dcb48abadb2cd0d6eba06d7a074ee4e8b2cdf6b2bea34a059c2fadedd23b6ba61e1a537e3fa47a0a7137fd8171b0ec894164bbb3418c53823475fcdca0fc41b2480cb28bb2a52bffaaddbd89143a5e5c63e46014e3a44f6c9176a6e1410aecd331ccaad062cb5e3cd9cf813e3a6fa1425b2d61fd904429c6a4b3bb5f5bca12364c46dc019f28766dc8058f116393cc57d556e80efa1bd784c05d8b6ddfe9a173d0161b5db7f50859cb908bca6e9abf05a8649dfd5997b70313f9fe48e882670ce4def568b8239910acf8ebae8089ee17d53c7222fa895d9ce98f7d43d4df84a3f4a3a41d9c55a85f395f8ee2bbf7c07b0aa5b664a38ef7c40a0ec5c3039833dafd3b75b3f83d6a58effc6b959a7e0af8a09a9b40d7ec54dbb2f86dfb2750a8df&quot;
 }</code></pre></div>
 
 <p>The request includes the following parameters:</p>
@@ -2004,6 +2008,138 @@ Content-Type: application/octet-stream
 
 <tbody>
 <tr>
+<td style="text-align: left">secret</td>
+<td style="text-align: left">hex string</td>
+<td style="text-align: left">The message encrypted by requester&#39;s public key</td>
+</tr>
+</tbody>
+</table>
+
+<blockquote>
+<p>The public key could be retrieved by <strong>/users/me</strong> API</p>
+</blockquote>
+
+<h5 id="toc_132">Response Format</h5>
+
+<p>An example of a successful response:</p>
+
+<div><pre><code class="language-javascript">{
+  &quot;order_id&quot;: 70000000001
+}</code></pre></div>
+
+<p>The response includes the following parameters:</p>
+
+<table>
+<thead>
+<tr>
+<th style="text-align: left">Field</th>
+<th style="text-align: left">Type</th>
+<th style="text-align: left">Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td style="text-align: left">order_id</td>
+<td style="text-align: left">int64</td>
+<td style="text-align: left">Callback ID. Use this ID to identify specific callback.</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="toc_133">Callback</h4>
+
+<p>An example of a callback:</p>
+
+<div><pre><code class="language-javascript">{
+  &quot;behavior_result&quot;: 2,
+  &quot;behavior_type&quot;: 7,
+  &quot;company_id&quot;: 3,
+  &quot;input&quot;: &quot;{\&quot;secret\&quot;:\&quot;0x04c7a7db0953984c6b3127a65300a86732a1799f076137a2619d913b84bf3130ff5fb947ac5b01706d902cb4fee021148eb0299626fb7c69f5e763ba3657fcef51f2326178289ac4d63d424444abaac33ec3c66844e5cd19d6ce12dcb48abadb2cd0d6eba06d7a074ee4e8b2cdf6b2bea34a059c2fadedd23b6ba61e1a537e3fa47a0a7137fd8171b0ec894164bbb3418c53823475fcdca0fc41b2480cb28bb2a52bffaaddbd89143a5e5c63e46014e3a44f6c9176a6e1410aecd331ccaad062cb5e3cd9cf813e3a6fa1425b2d61fd904429c6a4b3bb5f5bca12364c46dc019f28766dc8058f116393cc57d556e80efa1bd784c05d8b6ddfe9a173d0161b5db7f50859cb908bca6e9abf05a8649dfd5997b70313f9fe48e882670ce4def568b8239910acf8ebae8089ee17d53c7222fa895d9ce98f7d43d4df84a3f4a3a41d9c55a85f395f8ee2bbf7c07b0aa5b664a38ef7c40a0ec5c3039833dafd3b75b3f83d6a58effc6b959a7e0af8a09a9b40d7ec54dbb2f86dfb2750a8df\&quot;}&quot;,
+  &quot;order_id&quot;: 70000000013,
+  &quot;output&quot;: &quot;0x7b22636f6e74656e74223a2248656c6c6f20576f726c64222c2265787069726174696f6e223a22323031392d31312d30365431303a34313a30372e3133393837392b30383a3030222c2268617368223a22307862643662663637636638633130643833653330346339623833386263313064353565363930613439646332333730333063333862366539373231333237643833222c226d6573736167655f68617368223a22516d596674383674376934315663713379354476734455533333485a6a475a6d714b5a796577503145386732596a222c22737461747573223a302c2274696d65223a22323031392d31302d30375431303a34313a30372e3133393837392b30383a3030227d&quot;
+}</code></pre></div>
+
+<ul>
+<li><a href="#callback-definition">View callback definition</a></li>
+</ul>
+
+<h4 id="toc_134">Possible Errors</h4>
+
+<h5 id="toc_135">Refer to <a href="#common-errors">Common Errors</a></h5>
+
+<h5 id="toc_136"><a href="#table-of-contents">Back to top</a></h5>
+
+<p><a name="query-callback-status"></a></p>
+
+<h2 id="toc_137">Query Callback Status</h2>
+
+<p>Query callbacks&#39; status belong to requester&#39;s company.</p>
+
+<p><strong><code>POST</code></strong> /v1/vaultx/order/status</p>
+
+<ul>
+<li><a href="#curl-query-callback-status">Sample curl command</a></li>
+</ul>
+
+<h5 id="toc_138">Request Format</h5>
+
+<p>An example of the request:</p>
+
+<h6 id="toc_139">API with query string</h6>
+
+<div><pre><code class="language-none">/v1/vaultx/order/status?email=johndoe@example.com&amp;company_id=1</code></pre></div>
+
+<h6 id="toc_140">Post body</h6>
+
+<div><pre><code class="language-javascript">{
+  &quot;order_ids&quot;: [
+    10000000004,
+    20000000004,
+    30000000001
+  ]
+}</code></pre></div>
+
+<p>The request includes the following parameters:</p>
+
+<h6 id="toc_141">Query string</h6>
+
+<table>
+<thead>
+<tr>
+<th style="text-align: left">Field</th>
+<th style="text-align: left">Type</th>
+<th style="text-align: left">Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td style="text-align: left">email</td>
+<td style="text-align: left">string</td>
+<td style="text-align: left">Requester email</td>
+</tr>
+<tr>
+<td style="text-align: left">company_id</td>
+<td style="text-align: left">int64</td>
+<td style="text-align: left">Requester company ID</td>
+</tr>
+</tbody>
+</table>
+
+<h6 id="toc_142">Post body</h6>
+
+<table>
+<thead>
+<tr>
+<th style="text-align: left">Field</th>
+<th style="text-align: left">Type</th>
+<th style="text-align: left">Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
 <td style="text-align: left">order_ids</td>
 <td style="text-align: left">array</td>
 <td style="text-align: left">ID of callbacks</td>
@@ -2011,7 +2147,7 @@ Content-Type: application/octet-stream
 </tbody>
 </table>
 
-<h5 id="toc_132">Response Format</h5>
+<h5 id="toc_143">Response Format</h5>
 
 <p>An example of a successful response:</p>
 
@@ -2089,9 +2225,9 @@ Content-Type: application/octet-stream
 
 <p><a name="mock-server"></a></p>
 
-<h1 id="toc_133">Mock Server</h1>
+<h1 id="toc_144">Mock Server</h1>
 
-<h2 id="toc_134">Setup Configuration</h2>
+<h2 id="toc_145">Setup Configuration</h2>
 
 <blockquote>
 <p>Set following configuration in mockserver.app.conf</p>
@@ -2105,7 +2241,7 @@ Content-Type: application/octet-stream
 api_code=&quot;&quot;
 api_secret=&quot;&quot;</code></pre></div>
 
-<h2 id="toc_135">Register mock server URL</h2>
+<h2 id="toc_146">Register mock server URL</h2>
 
 <blockquote>
 <p>Operate on web admin console</p>
@@ -2119,7 +2255,7 @@ api_secret=&quot;&quot;</code></pre></div>
 
 <div><pre><code class="language-none">http://localhost:8890/v1/mock/getnonce</code></pre></div>
 
-<h2 id="toc_136">How to compile</h2>
+<h2 id="toc_147">How to compile</h2>
 
 <ul>
 <li>Put sample code to {YOUR_GO_PATH}/github.com/cybavo/VAULTX_MOCK_SERVER</li>
@@ -2134,11 +2270,11 @@ api_secret=&quot;&quot;</code></pre></div>
 
 <p><a name="curl-testing-commands"></a></p>
 
-<h2 id="toc_137">CURL Testing Commands</h2>
+<h2 id="toc_148">CURL Testing Commands</h2>
 
 <p><a name="curl-register-new-user"></a></p>
 
-<h4 id="toc_138">Register a new user</h4>
+<h4 id="toc_149">Register a new user</h4>
 
 <div><pre><code class="language-none">curl -X POST -d &#39;{&quot;name&quot;:&quot;JOHN DOE&quot;,&quot;email&quot;:&quot;johndoe@example.com&quot;,&quot;locale&quot;:&quot;en&quot;}&#39; \
 &quot;http://localhost:8890/v1/mock/users&quot;</code></pre></div>
@@ -2149,7 +2285,7 @@ api_secret=&quot;&quot;</code></pre></div>
 
 <p><a name="curl-pair-device"></a></p>
 
-<h4 id="toc_139">Pair device</h4>
+<h4 id="toc_150">Pair device</h4>
 
 <div><pre><code class="language-none">curl -X POST &quot;http://localhost:8890/v1/mock/devices?email=johndoe@example.com&amp;company_id=1&quot;</code></pre></div>
 
@@ -2159,7 +2295,7 @@ api_secret=&quot;&quot;</code></pre></div>
 
 <p><a name="curl-setup-pin-code"></a></p>
 
-<h4 id="toc_140">Setup PIN code</h4>
+<h4 id="toc_151">Setup PIN code</h4>
 
 <div><pre><code class="language-none">curl -X POST &quot;http://localhost:8890/v1/mock/users/pin?email=johndoe@example.com&amp;company_id=1&quot;</code></pre></div>
 
@@ -2169,15 +2305,15 @@ api_secret=&quot;&quot;</code></pre></div>
 
 <p><a name="curl-repair-device"></a></p>
 
-<h4 id="toc_141">Repair device</h4>
+<h4 id="toc_152">Repair device</h4>
 
-<h6 id="toc_142">Step 1: Issue a repair device request</h6>
+<h6 id="toc_153">Step 1: Issue a repair device request</h6>
 
 <div><pre><code class="language-none">curl -X POST &quot;http://localhost:8890/v1/mock/devices/repair?email=johndoe@example.com&amp;company_id=1&quot;</code></pre></div>
 
-<h6 id="toc_143">step 2: Check email to get 6-digit verification code</h6>
+<h6 id="toc_154">step 2: Check email to get 6-digit verification code</h6>
 
-<h6 id="toc_144">Step 3: Continue repairing process</h6>
+<h6 id="toc_155">Step 3: Continue repairing process</h6>
 
 <div><pre><code class="language-none">curl -X POST -d &#39;{&quot;token&quot;:&quot;TOKEN_FROM_SETP1&quot;,&quot;verify_num&quot;:VERIFICATION_CODE_FROM_EMAIL}&#39; \
 &quot;http://localhost:8890/v1/mock/devices/repair?email=johndoe@example.com&amp;company_id=1&quot;</code></pre></div>
@@ -2188,7 +2324,7 @@ api_secret=&quot;&quot;</code></pre></div>
 
 <p><a name="curl-issue-user-login-request"></a></p>
 
-<h4 id="toc_145">Issue a user login request</h4>
+<h4 id="toc_156">Issue a user login request</h4>
 
 <div><pre><code class="language-none">curl -X POST -d &#39;{&quot;ip&quot;:&quot;192.168.0.1&quot;,&quot;user_agent&quot;:&quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36&quot;,&quot;expires_at&quot;:1572451200}&#39; \
 &quot;http://localhost:8890/v1/mock/loginverify?email=johndoe@example.com&amp;company_id=1&quot;</code></pre></div>
@@ -2199,7 +2335,7 @@ api_secret=&quot;&quot;</code></pre></div>
 
 <p><a name="curl-query-user-status"></a></p>
 
-<h4 id="toc_146">Query user status</h4>
+<h4 id="toc_157">Query user status</h4>
 
 <div><pre><code class="language-none">curl -X GET &quot;http://localhost:8890/v1/mock/users/me?email=johndoe@example.com&amp;company_id=1&quot;</code></pre></div>
 
@@ -2209,16 +2345,16 @@ api_secret=&quot;&quot;</code></pre></div>
 
 <p><a name="curl-backup-user-key"></a></p>
 
-<h4 id="toc_147">Backup user key</h4>
+<h4 id="toc_158">Backup user key</h4>
 
-<h6 id="toc_148">Step 1: Issue a key backup request</h6>
+<h6 id="toc_159">Step 1: Issue a key backup request</h6>
 
 <div><pre><code class="language-none">curl -X POST -d &#39;{&quot;question&quot;:&quot;YOUR QUESTION&quot;,&quot;answer&quot;:&quot;YOUR ANSWER&quot;}&#39; \
 &quot;http://localhost:8890/v1/mock/wallets/backup?email=johndoe@example.com&amp;company_id=1&quot;</code></pre></div>
 
-<h6 id="toc_149">Step 2: Confirm request on CYBAVO Auth APP</h6>
+<h6 id="toc_160">Step 2: Confirm request on CYBAVO Auth APP</h6>
 
-<h6 id="toc_150">Step 3: Download key backup file</h6>
+<h6 id="toc_161">Step 3: Download key backup file</h6>
 
 <div><pre><code class="language-none">curl -X GET &quot;http://localhost:8890/v1/mock/wallets/backup/{TOKEN}?email=johndoe@example.com&amp;company_id=1&quot;</code></pre></div>
 
@@ -2228,18 +2364,18 @@ api_secret=&quot;&quot;</code></pre></div>
 
 <p><a name="curl-restore-user-key"></a></p>
 
-<h4 id="toc_151">Restore user key</h4>
+<h4 id="toc_162">Restore user key</h4>
 
-<h6 id="toc_152">Step 1: Upload key backup file to server</h6>
+<h6 id="toc_163">Step 1: Upload key backup file to server</h6>
 
 <div><pre><code class="language-none">curl -X POST &quot;http://localhost:8890/v1/mock/wallets/upload?email=johndoe@example.com&amp;company_id=1&quot;</code></pre></div>
 
-<h6 id="toc_153">Step 2: Submit the answer to restore keys</h6>
+<h6 id="toc_164">Step 2: Submit the answer to restore keys</h6>
 
 <div><pre><code class="language-none">curl -X POST -d &#39;{&quot;token&quot;:&quot;TOKEN FROM SERVER&quot;,&quot;question&quot;:&quot;QUESTION FROM SERVER&quot;,&quot;answer&quot;:&quot;YOUR ANSWER&quot;}&#39; \
 &quot;http://localhost:8890/v1/mock/wallets/restore?email=johndoe@example.com&amp;company_id=1&quot;</code></pre></div>
 
-<h6 id="toc_154">Step 3: Confirm request on CYBAVO Auth APP</h6>
+<h6 id="toc_165">Step 3: Confirm request on CYBAVO Auth APP</h6>
 
 <ul>
 <li><a href="#restore-user-key">API definition</a></li>
@@ -2247,7 +2383,7 @@ api_secret=&quot;&quot;</code></pre></div>
 
 <p><a name="curl-sign-message"></a></p>
 
-<h4 id="toc_155">Sign Message</h4>
+<h4 id="toc_166">Sign Message</h4>
 
 <div><pre><code class="language-none">curl -X POST -d &#39;{&quot;message&quot;:&quot;MESSAGE TO BE SIGNED&quot;}&#39; \
 &quot;http://localhost:8890/v1/mock/wallets/signature?email=johndoe@example.com&amp;company_id=1&quot;</code></pre></div>
@@ -2258,7 +2394,7 @@ api_secret=&quot;&quot;</code></pre></div>
 
 <p><a name="curl-sign-raw-transaction"></a></p>
 
-<h4 id="toc_156">Sign Transaction</h4>
+<h4 id="toc_167">Sign Transaction</h4>
 
 <div><pre><code class="language-none">curl -X POST -d &#39;{&quot;to&quot;:&quot;0x9576e27257e0eceea565fce04ab1beedfc6f35e4&quot;,&quot;gas_limit&quot;:90000,&quot;gas_price&quot;:1000000000,&quot;value&quot;:1000000000000000000,&quot;input&quot;:&quot;0x5448495320495320412054455354494e4720535452494e47&quot;,&quot;private&quot;:false}&#39; \
 &quot;http://localhost:8890/v1/mock/wallets/rawtx?email=johndoe@example.com&amp;company_id=1&quot;</code></pre></div>
@@ -2267,9 +2403,20 @@ api_secret=&quot;&quot;</code></pre></div>
 <li><a href="#sign-raw-transaction">API definition</a></li>
 </ul>
 
+<p><a name="curl-decrypt-message"></a></p>
+
+<h4 id="toc_168">Decrypt Message</h4>
+
+<div><pre><code class="language-none">curl -X POST -d &#39;{&quot;secret&quot;:&quot;0x04c7a7db0953984c6b3127a65300a86732a1799f076137a2619d913b84bf3130ff5fb947ac5b01706d902cb4fee021148eb0299626fb7c69f5e763ba3657fcef51f2326178289ac4d63d424444abaac33ec3c66844e5cd19d6ce12dcb48abadb2cd0d6eba06d7a074ee4e8b2cdf6b2bea34a059c2fadedd23b6ba61e1a537e3fa47a0a7137fd8171b0ec894164bbb3418c53823475fcdca0fc41b2480cb28bb2a52bffaaddbd89143a5e5c63e46014e3a44f6c9176a6e1410aecd331ccaad062cb5e3cd9cf813e3a6fa1425b2d61fd904429c6a4b3bb5f5bca12364c46dc019f28766dc8058f116393cc57d556e80efa1bd784c05d8b6ddfe9a173d0161b5db7f50859cb908bca6e9abf05a8649dfd5997b70313f9fe48e882670ce4def568b8239910acf8ebae8089ee17d53c7222fa895d9ce98f7d43d4df84a3f4a3a41d9c55a85f395f8ee2bbf7c07b0aa5b664a38ef7c40a0ec5c3039833dafd3b75b3f83d6a58effc6b959a7e0af8a09a9b40d7ec54dbb2f86dfb2750a8df&quot;}&#39; \
+&quot;http://localhost:8890/v1/mock/wallets/decrypt?email=johndoe@example.com&amp;company_id=1&quot;</code></pre></div>
+
+<ul>
+<li><a href="#decrypt-message">API definition</a></li>
+</ul>
+
 <p><a name="curl-query-callback-status"></a></p>
 
-<h4 id="toc_157">Query Callback Status</h4>
+<h4 id="toc_169">Query Callback Status</h4>
 
 <div><pre><code class="language-none">curl -X POST -d &#39;{&quot;order_ids&quot;:[10000000002,10000000003]}&#39; \
 &quot;http://localhost:8890/v1/mock/order/status?email=johndoe@example.com&amp;company_id=1&quot;</code></pre></div>
@@ -2278,13 +2425,13 @@ api_secret=&quot;&quot;</code></pre></div>
 <li><a href="#query-callback-status">API definition</a></li>
 </ul>
 
-<h5 id="toc_158"><a href="#table-of-contents">Back to top</a></h5>
+<h5 id="toc_170"><a href="#table-of-contents">Back to top</a></h5>
 
-<h1 id="toc_159">Appendix</h1>
+<h1 id="toc_171">Appendix</h1>
 
 <p><a name="callback-definition"></a></p>
 
-<h2 id="toc_160">Callback Definition</h2>
+<h2 id="toc_172">Callback Definition</h2>
 
 <table>
   <tr>
@@ -2305,15 +2452,17 @@ api_secret=&quot;&quot;</code></pre></div>
   <tr>
     <td>behavior_type</td>
     <td>number</td>
-    <td rowspan="6">
+    <td rowspan="7">
       <b>1</b> - Login<br>
       <b>2</b> - Sign raw tx<br>
       <b>3</b> - Sign signature<br>
       <b>4</b> - Pair device<br>
       <b>5</b> - Setup PIN code<br>
-      <b>6</b> - Backup User Keys
+      <b>6</b> - Backup user key<br>
+      <b>7</b> - Decrypt message<br>
     </td>
   </tr>
+  <tr></tr>
   <tr></tr>
   <tr></tr>
   <tr></tr>
@@ -2340,6 +2489,7 @@ api_secret=&quot;&quot;</code></pre></div>
       behavior_type<br>
       <b>2</b> - the raw transaction to sign<br>
       <b>3</b> - the message to sign<br>
+      <b>7</b> - the message to decrypt (hex string)<br>
     </td>
   </tr>
   <tr></tr>
@@ -2347,19 +2497,20 @@ api_secret=&quot;&quot;</code></pre></div>
   <tr>
     <td>output</td>
     <td>hex string</td>
-    <td rowspan=3>
+    <td rowspan=4>
       behavior_type<br>
       <b>2</b> - the signed transaction<br>
       <b>3</b> - the signed message<br>
+      <b>7</b> - the decrypted message (hex string)<br>
     </td>
   </tr>
 </table>
 
-<h5 id="toc_161"><a href="#table-of-contents">Back to top</a></h5>
+<h5 id="toc_173"><a href="#table-of-contents">Back to top</a></h5>
 
 <p><a name="api-callback-list"></a></p>
 
-<h2 id="toc_162">API Callback List</h2>
+<h2 id="toc_174">API Callback List</h2>
 
 <table>
 <thead>
@@ -2406,14 +2557,19 @@ api_secret=&quot;&quot;</code></pre></div>
 <td style="text-align: left">6</td>
 <td style="text-align: left">-</td>
 </tr>
+<tr>
+<td style="text-align: left">/wallets/decrypt</td>
+<td style="text-align: left">7</td>
+<td style="text-align: left">yes</td>
+</tr>
 </tbody>
 </table>
 
-<h5 id="toc_163"><a href="#table-of-contents">Back to top</a></h5>
+<h5 id="toc_175"><a href="#table-of-contents">Back to top</a></h5>
 
 <p><a name="common-errors"></a></p>
 
-<h2 id="toc_164">Common Errors</h2>
+<h2 id="toc_176">Common Errors</h2>
 
 <table>
 <thead>
@@ -2453,11 +2609,11 @@ api_secret=&quot;&quot;</code></pre></div>
 </tbody>
 </table>
 
-<h5 id="toc_165"><a href="#table-of-contents">Back to top</a></h5>
+<h5 id="toc_177"><a href="#table-of-contents">Back to top</a></h5>
 
 <p><a name="setup-getnonce-api"></a></p>
 
-<h2 id="toc_166">Setup getnonce API</h2>
+<h2 id="toc_178">Setup getnonce API</h2>
 
 <p>During the raw transation signing process, the CYBAVO server will invoke getnonce API to retrieve the nonce of the wallet address.</p>
 
@@ -2465,11 +2621,11 @@ api_secret=&quot;&quot;</code></pre></div>
 <p>Set the getnonce API URL on web admin console.</p>
 </blockquote>
 
-<h5 id="toc_167">Request Format</h5>
+<h5 id="toc_179">Request Format</h5>
 
 <p>An example of the request:</p>
 
-<h6 id="toc_168">Post body</h6>
+<h6 id="toc_180">Post body</h6>
 
 <div><pre><code class="language-javascript">{
     &quot;address&quot;: &quot;0x94b3d188620bf633f6bff5f8c718b4bfbaca0c55&quot;,
@@ -2478,7 +2634,7 @@ api_secret=&quot;&quot;</code></pre></div>
 
 <p>The request includes the following parameters:</p>
 
-<h6 id="toc_169">Post body</h6>
+<h6 id="toc_181">Post body</h6>
 
 <table>
 <thead>
@@ -2503,7 +2659,7 @@ api_secret=&quot;&quot;</code></pre></div>
 </tbody>
 </table>
 
-<h5 id="toc_170">Response Format</h5>
+<h5 id="toc_182">Response Format</h5>
 
 <p>An example of a successful response:</p>
 

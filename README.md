@@ -13,6 +13,7 @@
 	- [Restore User Key](#restore-user-key)
 	- [Sign Message](#sign-message)
 	- [Sign Raw Transaction](#sign-raw-transaction)
+	- [Decrypt Message](#decrypt-message)
 	- [Query Callback Status](#query-callback-status)
 - Testing
 	- [Mock Server](#mock-server)
@@ -413,7 +414,7 @@ The request includes the following parameters:
 | :---  | :---  | :---        |
 | ip         | string | Requester IP |
 | user_agent | string | User-Agent of the requester's browser |
-| expires_at | number | Expiration time (in unix time, UTC) of this 2fa request |
+| expires_at | number | Expiration time (in unix time, UTC) of this 2FA request |
 
 ##### Response Format
 
@@ -496,7 +497,8 @@ An example of a successful response:
   "wallets": [
     {
       "type": "quorum",
-      "address": "0x7bF1512559EEA03187dD3c9Ed65DD10eDeEBF6B0"
+      "address": "0x69363AFef99DC6f52daA2C4D0731934d36f7844d",
+      "public_key": "0x03055b24413ef30be430cf131114ab768f245803c98ef5bf3b3aaafde414f7670e"
     }
   ]
 }
@@ -787,7 +789,7 @@ Accept restoring request to reset PIN code.
 Sign message.
 > This API has a callback.
 > 
-> After2fa request confirmed on CYBAVO Auth APP, the corresponding callback will contain signed message.
+> After 2FA request confirmed on CYBAVO Auth APP, the corresponding callback will contain signed message.
 
 **`POST`** /v1/vaultx/wallets/signature
 
@@ -872,7 +874,7 @@ Sign raw transaction.
 
 > This API has a callback.
 
-> After 2fa request confirmed, server will call getnonce API to retrieve the nonce of the wallet address. Refer to [Setup getnonce API](#setup-getnonce-api) section.
+> After 2FA request confirmed, server will call getnonce API to retrieve the nonce of the wallet address. Refer to [Setup getnonce API](#setup-getnonce-api) section.
 
 **`POST`** /v1/vaultx/wallets/rawtx
 
@@ -949,6 +951,93 @@ An example of a callback:
   "input": "{\"to\":\"0x9576e27257e0eceea565fce04ab1beedfc6f35e4\",\"gas_limit\":90000,\"gas_price\":1000000000,\"value\":1000000000000000000,\"input\":\"0x5448495320495320412054455354494e4720535452494e47\",\"private\":false}",
   "order_id": 20000000010,
   "output": "f88401843b9aca0083015f90949576e27257e0eceea565fce04ab1beedfc6f35e4880de0b6b3a7640000985448495320495320412054455354494e4720535452494e4729a0e7cb1b61aa52529adbdb0c45750f3ac8863882fd270fa387b15fc558a0e097cba0723d0f518fb60a345829c09479e37ab156d4a7c027276848a08ece5e75681f5c"
+}
+```
+
+- [View callback definition](#callback-definition)
+
+#### Possible Errors
+
+##### Refer to [Common Errors](#common-errors)
+
+#####[Back to top](#table-of-contents)
+
+
+<a name="decrypt-message"></a>
+## Decrypt Message
+
+Decrypt the message which encrypted by requester's public key.
+
+> This API has a callback.
+
+> After 2FA request confirmed on CYBAVO Auth APP, the corresponding callback will contain decrypted message.
+
+**`POST`** /v1/vaultx/wallets/decrypt
+
+- [Sample curl command](#curl-decrypt-message)
+
+##### Request Format
+
+An example of the request:
+
+###### API with query string
+
+```
+/v1/vaultx/wallets/decrypt?email=johndoe@example.com&company_id=1
+```
+
+###### Post body
+
+```json
+{
+  "secret": "0x04c7a7db0953984c6b3127a65300a86732a1799f076137a2619d913b84bf3130ff5fb947ac5b01706d902cb4fee021148eb0299626fb7c69f5e763ba3657fcef51f2326178289ac4d63d424444abaac33ec3c66844e5cd19d6ce12dcb48abadb2cd0d6eba06d7a074ee4e8b2cdf6b2bea34a059c2fadedd23b6ba61e1a537e3fa47a0a7137fd8171b0ec894164bbb3418c53823475fcdca0fc41b2480cb28bb2a52bffaaddbd89143a5e5c63e46014e3a44f6c9176a6e1410aecd331ccaad062cb5e3cd9cf813e3a6fa1425b2d61fd904429c6a4b3bb5f5bca12364c46dc019f28766dc8058f116393cc57d556e80efa1bd784c05d8b6ddfe9a173d0161b5db7f50859cb908bca6e9abf05a8649dfd5997b70313f9fe48e882670ce4def568b8239910acf8ebae8089ee17d53c7222fa895d9ce98f7d43d4df84a3f4a3a41d9c55a85f395f8ee2bbf7c07b0aa5b664a38ef7c40a0ec5c3039833dafd3b75b3f83d6a58effc6b959a7e0af8a09a9b40d7ec54dbb2f86dfb2750a8df"
+}
+```
+
+The request includes the following parameters:
+
+###### Query string
+
+| Field | Type  | Description |
+| :---  | :---  | :---        |
+| email | string | Requester email |
+| company_id | int64 | Requester company ID |
+
+###### Post body
+
+| Field | Type  | Description |
+| :---  | :---  | :---        |
+| secret | hex string | The message encrypted by requester's public key |
+> The public key could be retrieved by **/users/me** API
+
+##### Response Format
+
+An example of a successful response:
+
+```json
+{
+  "order_id": 70000000001
+}
+```
+
+The response includes the following parameters:
+
+| Field | Type  | Description |
+| :---  | :---  | :---        |
+| order_id | int64 | Callback ID. Use this ID to identify specific callback. |
+
+#### Callback
+
+An example of a callback:
+
+```json
+{
+  "behavior_result": 2,
+  "behavior_type": 7,
+  "company_id": 3,
+  "input": "{\"secret\":\"0x04c7a7db0953984c6b3127a65300a86732a1799f076137a2619d913b84bf3130ff5fb947ac5b01706d902cb4fee021148eb0299626fb7c69f5e763ba3657fcef51f2326178289ac4d63d424444abaac33ec3c66844e5cd19d6ce12dcb48abadb2cd0d6eba06d7a074ee4e8b2cdf6b2bea34a059c2fadedd23b6ba61e1a537e3fa47a0a7137fd8171b0ec894164bbb3418c53823475fcdca0fc41b2480cb28bb2a52bffaaddbd89143a5e5c63e46014e3a44f6c9176a6e1410aecd331ccaad062cb5e3cd9cf813e3a6fa1425b2d61fd904429c6a4b3bb5f5bca12364c46dc019f28766dc8058f116393cc57d556e80efa1bd784c05d8b6ddfe9a173d0161b5db7f50859cb908bca6e9abf05a8649dfd5997b70313f9fe48e882670ce4def568b8239910acf8ebae8089ee17d53c7222fa895d9ce98f7d43d4df84a3f4a3a41d9c55a85f395f8ee2bbf7c07b0aa5b664a38ef7c40a0ec5c3039833dafd3b75b3f83d6a58effc6b959a7e0af8a09a9b40d7ec54dbb2f86dfb2750a8df\"}",
+  "order_id": 70000000013,
+  "output": "0x7b22636f6e74656e74223a2248656c6c6f20576f726c64222c2265787069726174696f6e223a22323031392d31312d30365431303a34313a30372e3133393837392b30383a3030222c2268617368223a22307862643662663637636638633130643833653330346339623833386263313064353565363930613439646332333730333063333862366539373231333237643833222c226d6573736167655f68617368223a22516d596674383674376934315663713379354476734455533333485a6a475a6d714b5a796577503145386732596a222c22737461747573223a302c2274696d65223a22323031392d31302d30375431303a34313a30372e3133393837392b30383a3030227d"
 }
 ```
 
@@ -1193,6 +1282,15 @@ curl -X POST -d '{"to":"0x9576e27257e0eceea565fce04ab1beedfc6f35e4","gas_limit":
 ```
 - [API definition](#sign-raw-transaction)
 
+<a name="curl-decrypt-message"></a>
+#### Decrypt Message
+```
+curl -X POST -d '{"secret":"0x04c7a7db0953984c6b3127a65300a86732a1799f076137a2619d913b84bf3130ff5fb947ac5b01706d902cb4fee021148eb0299626fb7c69f5e763ba3657fcef51f2326178289ac4d63d424444abaac33ec3c66844e5cd19d6ce12dcb48abadb2cd0d6eba06d7a074ee4e8b2cdf6b2bea34a059c2fadedd23b6ba61e1a537e3fa47a0a7137fd8171b0ec894164bbb3418c53823475fcdca0fc41b2480cb28bb2a52bffaaddbd89143a5e5c63e46014e3a44f6c9176a6e1410aecd331ccaad062cb5e3cd9cf813e3a6fa1425b2d61fd904429c6a4b3bb5f5bca12364c46dc019f28766dc8058f116393cc57d556e80efa1bd784c05d8b6ddfe9a173d0161b5db7f50859cb908bca6e9abf05a8649dfd5997b70313f9fe48e882670ce4def568b8239910acf8ebae8089ee17d53c7222fa895d9ce98f7d43d4df84a3f4a3a41d9c55a85f395f8ee2bbf7c07b0aa5b664a38ef7c40a0ec5c3039833dafd3b75b3f83d6a58effc6b959a7e0af8a09a9b40d7ec54dbb2f86dfb2750a8df"}' \
+"http://localhost:8890/v1/mock/wallets/decrypt?email=johndoe@example.com&company_id=1"
+```
+- [API definition](#decrypt-message)
+
+
 <a name="curl-query-callback-status"></a>
 #### Query Callback Status
 ```
@@ -1228,15 +1326,17 @@ curl -X POST -d '{"order_ids":[10000000002,10000000003]}' \
   <tr>
     <td>behavior_type</td>
     <td>number</td>
-    <td rowspan="6">
+    <td rowspan="7">
       <b>1</b> - Login<br>
       <b>2</b> - Sign raw tx<br>
       <b>3</b> - Sign signature<br>
       <b>4</b> - Pair device<br>
       <b>5</b> - Setup PIN code<br>
-      <b>6</b> - Backup User Keys
+      <b>6</b> - Backup user key<br>
+      <b>7</b> - Decrypt message<br>
     </td>
   </tr>
+  <tr></tr>
   <tr></tr>
   <tr></tr>
   <tr></tr>
@@ -1263,6 +1363,7 @@ curl -X POST -d '{"order_ids":[10000000002,10000000003]}' \
       behavior_type<br>
       <b>2</b> - the raw transaction to sign<br>
       <b>3</b> - the message to sign<br>
+      <b>7</b> - the message to decrypt (hex string)<br>
     </td>
   </tr>
   <tr></tr>
@@ -1270,10 +1371,11 @@ curl -X POST -d '{"order_ids":[10000000002,10000000003]}' \
   <tr>
     <td>output</td>
     <td>hex string</td>
-    <td rowspan=3>
+    <td rowspan=4>
       behavior_type<br>
       <b>2</b> - the signed transaction<br>
       <b>3</b> - the signed message<br>
+      <b>7</b> - the decrypted message (hex string)<br>
     </td>
   </tr>
 </table>
@@ -1293,6 +1395,7 @@ curl -X POST -d '{"order_ids":[10000000002,10000000003]}' \
 | /devices/repair | 4 | - |
 | /users/pin | 5 | - |
 | /wallets/backup | 6 | - |
+| /wallets/decrypt | 7 | yes |
 
 #####[Back to top](#table-of-contents)
 
